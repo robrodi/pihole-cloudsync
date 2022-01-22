@@ -39,14 +39,16 @@ dnsmasq_dir='/etc/dnsmasq.d/'
 ad_list='adlist.csv'
 custom_list='custom.list'
 domain_list='domainlist.csv'
+domain_list_by_group='domainlist_by_group.csv'
 cname_list='05-pihole-custom-cname.conf'
+
 ###########################################################################
 # SHOULDN'T NEED TO EDIT BELOW THIS LINE
 
 # Force sudo if not running with root privileges
 SUDO=''
 if [ "$EUID" -ne 0 ]
-  then SUDO='sudo'
+  # then SUDO='sudo'
 fi
 
 # FUNCTIONS
@@ -68,6 +70,7 @@ push_initialize () {
 	# Export Ad and Domain lists from Gravity database
 	$SUDO sqlite3 $gravity_db -header -csv "SELECT * FROM adlist" >$ad_list
 	$SUDO sqlite3 $gravity_db -header -csv "SELECT * FROM domainlist" >$domain_list
+	$SUDO sqlite3 $gravity_db -header -csv "SELECT * FROM domainlist_by_group" >$domain_list_by_group
 
 	# Add all lists to local Git repo
 	$SUDO git add .
@@ -157,6 +160,8 @@ pull () {
                 $SUDO sqlite3 $gravity_db -header -csv ".import adlist.csv adlist"
                 $SUDO sqlite3 $gravity_db "DROP TABLE domainlist;"
                 $SUDO sqlite3 $gravity_db -header -csv ".import domainlist.csv domainlist"
+				$SUDO sqlite3 $gravity_db -header -csv ".import domainlist_by_group.csv domainlist_by_group"
+                $SUDO sqlite3 $gravity_db -header -csv ".import client.csv client"
 		$SUDO pihole -g
                 echo 'Done!';
                 exit 0
